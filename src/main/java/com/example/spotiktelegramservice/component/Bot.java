@@ -29,9 +29,17 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         String message = update.getMessage().getText();
         service.setChatId(String.valueOf(update.getMessage().getChatId()));
-        if (message.equals("/start")) {
-            execute(service.sendMessage("Welcome to Spotik"));
-            execute(service.sendQueue());
+        switch (message) {
+            case "/start" -> execute(service.sendMessage("Welcome to Spotik\n"
+                    + "next step is activation sending releases, please put /activate {your spotify email}"));
+            case "/deactivate" -> execute(service.deactivate());
+        }
+
+        if (message.startsWith("/activate")) {
+            execute(service.sendEmail(message));
+        } else if (message.startsWith("/check")) {
+            execute(service.check(message) ? service.activate()
+                    : service.sendMessage("invalid code"));
         }
     }
 }

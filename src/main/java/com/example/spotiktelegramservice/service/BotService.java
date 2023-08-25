@@ -5,9 +5,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 public interface BotService {
     void setChatId(String chatId);
 
-    SendMessage sendQueue();
-
     SendMessage sendMessage(String str);
+
+    SendMessage sendMessage(String str, String chatId);
 
     SendMessage activate();
 

@@ -4,15 +4,10 @@ import com.example.spotiktelegramservice.dao.TelegramUserDao;
 import com.example.spotiktelegramservice.entity.TelegramUser;
 import com.example.spotiktelegramservice.service.BotService;
 import com.example.spotiktelegramservice.service.EmailSender;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.*;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -21,32 +16,16 @@ public class BotServiceImpl implements BotService {
     private final EmailSender sender;
     private final TelegramUserDao telegramUserDao;
     private String chatId;
-    private String message;
 
-    @RabbitListener(queues = {"${rabbitmq.queue}"})
-    private void lastMessage(String message) {
-        this.message = message;
-    }
 
     @Override
     public void setChatId(String chatId) {
         this.chatId = chatId;
     }
 
-    public SendMessage sendQueue() {
-        try {
-            return sendMessage(Optional.ofNullable(message)
-                    .map(x -> {
-                        try {
-                            return new ObjectMapper().readValue(x, EmailArtistSongs.class).toString();
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .orElse("There are no new releases"));
-        } finally {
-            message = null;
-        }
+    @Override
+    public SendMessage sendMessage(String str, String chatId) {
+        return new SendMessage(chatId, str);
     }
 
     public SendMessage sendMessage(String str) {
@@ -89,25 +68,5 @@ public class BotServiceImpl implements BotService {
         int min = 1000;
         int max = 9999;
         return new Random().nextInt(max - min + 1) + min;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    @ToString
-    @NoArgsConstructor
-    private static class EmailArtistSongs {
-        private String email;
-        private List<ArtistSongs> artists;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    @ToString
-    @NoArgsConstructor
-    private static class ArtistSongs {
-        private String artist;
-        private List<String> songs;
     }
 }

@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TelegramUserDaoImpl implements TelegramUserDao {
@@ -36,6 +38,14 @@ public class TelegramUserDaoImpl implements TelegramUserDao {
                     .setParameter("id", chatId)
                     .executeUpdate();
             em.getTransaction().commit();
+        }
+    }
+
+    @Override
+    public List<TelegramUser> getAllUsersWithActiveStatus() {
+        try (var em = sessionFactory.createEntityManager()) {
+            return em.createQuery("FROM telegram_users WHERE active = true", TelegramUser.class)
+                    .getResultList();
         }
     }
 }
